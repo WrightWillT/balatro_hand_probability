@@ -44,8 +44,8 @@ is_pair <- function(hand) {
   # Create a frequency table of the ranks
   rank_counts <- table(ranks)
   
-  # Check if there's at least one rank with exactly two cards
-  return(any(rank_counts == 2))
+  # Check if there's at least one rank with at least two cards
+  return(any(rank_counts >= 2))
 }
 
 
@@ -56,8 +56,8 @@ is_two_pair <- function(hand) {
   # Create a frequency table of the ranks
   rank_counts <- table(ranks)
   
-  # Check if there are at least two ranks with exactly two cards each
-  return(sum(rank_counts == 2) == 2)
+  # Check if there are at least two ranks with at least two cards each
+  return(sum(rank_counts >= 2) >= 2)
 }
 
 
@@ -68,8 +68,8 @@ is_three_of_a_kind <- function(hand) {
   # Create a frequency table of the ranks
   rank_counts <- table(ranks)
   
-  # Check if there's at least one rank with exactly three cards
-  return(any(rank_counts == 3))
+  # Check if there's at least one rank with at least three cards
+  return(any(rank_counts >= 3))
 }
 
 
@@ -130,8 +130,8 @@ is_full_house <- function(hand) {
   # Create a frequency table of the ranks
   rank_counts <- table(ranks)
   
-  # Check for three-of-a-kind and a pair
-  return(any(rank_counts == 3) && any(rank_counts == 2))
+  # Check for at least three-of-a-kind and at least a pair
+  return(any(rank_counts >= 3) && any(rank_counts >= 2))
 }
 
 
@@ -142,8 +142,8 @@ is_four_of_a_kind <- function(hand) {
   # Create a frequency table of the ranks
   rank_counts <- table(ranks)
   
-  # Check if there's at least one rank with exactly four cards
-  return(any(rank_counts == 4))
+  # Check if there's at least one rank with at least four cards
+  return(any(rank_counts >= 4))
 }
 
 
@@ -257,24 +257,29 @@ print(simulation_results / n)
 
 
 ############################################################################################################################################
-# 1MM HAND SIMULATIONS FOR HANDS OF SIZE 5-10
+# HAND SIMULATIONS
 ############################################################################################################################################
+
+hand_size_low <- 2
+hand_size_high <- 52
+n <- 10000
 
 # Run simulations for hand sizes 5 to 10 and collect results
 results <- list()
-for (hand_size in 5:10) {
-  results[[as.character(hand_size)]] <- simulate_hands(1e6, hand_size)
+for (hand_size in hand_size_low:hand_size_high) {
+  results[[as.character(hand_size)]] <- simulate_hands(n, hand_size)
+  print(hand_size)
 }
 
 # Convert results to percentages
-results_perc <- lapply(results, function(x) (x / 1e6) * 100)
+results_perc <- lapply(results, function(x) (x / n) * 100)
 
 # Create a data frame for the summary table
 poker_hand_types <- c("Pair", "Two Pair", "Three of a Kind", "Straight", "Flush", "Full House", "Four of a Kind", "Straight Flush")
 summary_table <- data.frame(poker_hand = poker_hand_types)
 
 # Fill the summary table with the percentages
-for (hand_size in 5:10) {
+for (hand_size in hand_size_low:hand_size_high) {
   hand_size_col <- paste("hand_size", hand_size, sep = "_")
   # Extracting percentages for the current hand size
   summary_table[[hand_size_col]] <- unlist(lapply(results_perc[[as.character(hand_size)]], function(x) x))
@@ -309,13 +314,23 @@ ggplot(summary_table_long, aes(x = as.integer(hand_size), y = probability, color
        y = "Probability (%)",
        color = "Poker Hand") +
   theme_minimal() +
-  scale_x_continuous(breaks = 5:10) + # Ensure hand sizes are treated as discrete values
   theme_bw() 
 
 
+############################################################################################################################################
+# FIRST BOSS SIMULATOR
+############################################################################################################################################
 
+# Context: tag-fishing is the act of restarting runs till you get two favorable tags for the small and big blinds. The idea is that you
+  # eventually are satisfied with the tags and skip right to the first boss where you have no upgrades and a basic deck. The purpose of this
+  # section is to optimize a strategy for this boss. While basic Texas Hold 'em has been studied to death, this variant with an 8 card hand,
+  # multiple hands, and multiple discards makes the optimal strategy more ambiguous.
 
+# The goal is to get a score of at least 600 in 4 hands with 3 discards and a hand size of 8. Each hand has a different base amount of Chips
+  # and Mult. Ideally, the results should inform optimal play at each stage of the round (either playing a hand or discarding). 
 
+# Ah, so ChatGPT is telling me that a reinforcement learning is going to be rough in R. I'm considering a switch to Python so I can use all
+  # the latest libraries.
 
 
 
